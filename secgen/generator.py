@@ -228,7 +228,7 @@ def generate_token(bytes:int=16)->str:
     """_summary_
 
     Args:
-        bytes (int, optional): _description_. Defaults to 16.
+        bytes (int, optional): the bytes accepted. Defaults to 16.
 
     Returns:
         str: _description_
