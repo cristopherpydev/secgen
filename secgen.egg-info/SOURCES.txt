@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+secgen/__init__.py
+secgen/generator.py
+secgen.egg-info/PKG-INFO
+secgen.egg-info/SOURCES.txt
+secgen.egg-info/dependency_links.txt
+secgen.egg-info/top_level.txt
+secgen/data/mnemotechnic_stream.json
