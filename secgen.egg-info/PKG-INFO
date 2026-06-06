@@ -1,7 +1,7 @@
 Metadata-Version: 2.4
 Name: secgen
-Version: 0.2.2
-Summary: A brief tool to generate random secure passwords with ease.
+Version: 1.0.0
+Summary: A brief tool to analyse and generate entropic passwords and keys.
 Author-email: Cristopher Méndez Cervantes <cristophermendezcervantes@gmail.com>
 Project-URL: Homepage, https://github.com/cristopherpydev/secgen
 Classifier: Programming Language :: Python :: 3
@@ -12,6 +12,185 @@ Description-Content-Type: text/markdown
 License-File: LICENSE
 Dynamic: license-file
 
-# Changelog
+# secgen
 
-Foo text
+[![PyPI version](https://img.shields.io/pypi/v/secgen.svg)](https://pypi.org/project/secgen/)
+[![Python versions](https://img.shields.io/pypi/pyversions/secgen.svg)](https://pypi.org/project/secgen/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+A comprehensive, secure, and highly configurable Python library for credential generation and entropy analysis.
+
+This package provides developers with the tools to generate deterministic passwords, strong passphrases, cryptographically secure tokens, numeric PINs, and mnemonic passwords. Additionally, it features an advanced analysis module to evaluate password strength through entropy calculations and brute-force crack time estimations.
+
+---
+
+## Features
+
+* **Password Generation:** Create highly secure passwords with customizable length and character sets (uppercase, numbers, symbols).
+* **Passphrase Generation:** Generate high-entropy, memorable passphrases using customizable word counts and separators.
+* **Bulk Generation:** Generate large batches of secure passwords or passphrases efficiently.
+* **Token & PIN Creation:** Generate cryptographically secure hexadecimal tokens and numeric PINs.
+* **Mnemonic Passwords:** Generate memorable yet secure passwords using customizable JSON data streams.
+* **Entropy Analysis:** Calculate the cryptographic strength of a password based on character pool and length.
+* **Crack Time Estimation:** Estimate the time required to brute-force a password using modern hardware capabilities.
+
+---
+
+## Installation
+
+You can install the package directly via pip:
+
+```bash
+pip install secgen
+```
+
+---
+
+## Usage
+
+### 1. Credential Generation (`secgen.generator`)
+
+The generator module provides multiple functions to create different types of security credentials.
+
+#### Standard Password Generation
+Generate a single password with specific constraints.
+
+```python
+from secgen.generator import generate_password
+
+# Generate a 24-character password with uppercase letters, numbers, and symbols
+secure_pwd = generate_password(length=24, uppercase_letters=True, numbers=True, symbols=True)
+print(secure_pwd)
+# Output example: 'A$5xpu!23lzQ34?#u4v8K9@z'
+```
+
+#### Passphrase Generation
+Generate a strong passphrase combining multiple random words. *Requires a `data` directory containing `random_words.txt` relative to the generator module.*
+
+```python
+from secgen.generator import generate_passphrase
+
+# Generate a 4-word passphrase separated by hyphens
+passphrase = generate_passphrase(words=4, separator="-")
+print(passphrase)
+# Output example: 'battery-horse-staple-correct'
+```
+
+#### Bulk Generation
+Generate a list of passwords or passphrases, ideal for administrative purposes or initial database seeding.
+
+```python
+from secgen.generator import generate_many_passwords, generate_many_passphrases
+
+# Generate 5 passwords, each 12 characters long
+bulk_pwds = generate_many_passwords(num=5, length=12, uppercase_letters=True, numbers=True, symbols=False)
+print(bulk_pwds)
+
+# Generate 3 passphrases, each containing 5 words
+bulk_phrases = generate_many_passphrases(number=3, words=5, separator="_")
+print(bulk_phrases)
+```
+
+#### PIN and Token Generation
+Generate purely numeric PINs and secure hexadecimal tokens.
+
+```python
+from secgen.generator import generate_pin, generate_token
+
+# Generate a 6-digit PIN
+user_pin = generate_pin(length=6)
+print(user_pin) 
+# Output example: '492018'
+
+# Generate a 32-byte secure hexadecimal token
+session_token = generate_token(bytes=32)
+print(session_token) 
+```
+
+#### Mnemonic Password Generation
+Generate symbolic passwords based on memorability levels. *Requires a `data` directory containing a `mnemotechnic_stream.json` file relative to the generator module.*
+
+```python
+from secgen.generator import generate_mnemonic_password
+
+# Generate a standard mnemonic password with medium complexity
+mnemo_pwd = generate_mnemonic_password(lvl="medium", composition="standard")
+print(mnemo_pwd)
+```
+
+---
+
+### 2. Password Analysis (`secgen.analysis`)
+
+The analysis module evaluates password strength by calculating entropy bits and estimating brute-force vulnerability.
+
+#### Analyze a Single Password
+
+```python
+from secgen.analysis import analyze_one
+
+result = analyze_one('A$5xpu!23lzQ34?#u4', crack_time=True)
+
+print(result['crack_time']) 
+# Output example: 'Millenia (Imposible with the actual technology)'
+
+print(result['feedback']) 
+# Output example: '\033[92mExcellent\033[0m' (Terminal colored output)
+```
+> **Note:** The `feedback` string includes ANSI color codes (Red, Yellow, Blue, Green) to render colored text directly in standard terminal environments.
+
+#### Analyze Multiple Passwords (Bulk)
+
+```python
+from secgen.analysis import analyze_many
+
+passwords_to_check = ['A$5xpu!23lzQ34?#u4', 'FroDobolSon', 'a']
+bulk_results = analyze_many(passwords_to_check)
+
+for idx, data in enumerate(bulk_results):
+    print(f"Password {idx + 1}:")
+    print(f" - Strength: {data['feedback']}")
+    print(f" - Crack Time: {data['crack_time']}\n")
+```
+
+---
+## The Theory Behind the Math: Shannon Entropy
+
+At the core of `secgen`'s analysis module lies the concept of **Information Entropy**, introduced by mathematician Claude E. Shannon in 1948. In the context of cybersecurity, entropy measures the unpredictability or "randomness" of a password.
+
+The library calculates this using the foundational formula: `E = L * log2(R)`
+
+Where:
+* **E** is the total entropy in bits.
+* **L** is the length of the password.
+* **R** is the pool of possible characters (e.g., 26 lowercase + 26 uppercase + 10 digits + 32 symbols = 94 possible characters).
+
+By calculating the exact entropy bits, `secgen` mathematically estimates the maximum number of attempts a brute-force attack would need. It then translates that massive number into human-readable timeframes based on modern computing capabilities (calculating at a conservative baseline of 100 billion hashes per second).
+
+## Behind the Code: A Human Touch
+
+Building `secgen` was more than just an exercise in writing Python—it was a defining personal and professional milestone. 
+
+This project was born from the practical needs observed during real-world development internships: the necessity for a lightweight, zero-dependency tool that generates and analyzes security credentials predictably and safely. 
+
+More importantly, wrapping this logic into a polished `1.0.0` release—complete with strict type hinting, robust exception handling, and 100% test coverage—represents the final step in my transition from a student in the Multiplatform Application Development (DAM) program to a professional software engineer. It is the culmination of years of study, late nights coding, and the ultimate push after presenting my final degree project (TFG).
+
+`secgen` is proof that writing good software isn't just about syntax; it's about understanding the math behind the security, solving real problems, and taking the leap into the professional development world.
+
+## Dependencies
+
+This library is built exclusively using Python's standard library modules (`random`, `os`, `json`, `secrets`, `math`) to ensure zero external dependencies and maximum security compatibility. 
+
+## Testing
+
+The package includes a comprehensive suite of unit tests built with `pytest`, achieving complete logic coverage and implementing robust mock environments for secure file handling.
+
+## Author
+
+[**Cristopher Méndez Cervantes** - Personal portfolio](https://cristopherpydev.github.io)
+
+[**@R3D** - GitHub Account](https://github.com/cristopherpydev)
+
+## License
+
+This project is licensed under the GNU General Public License v3.0. You are free to redistribute it and/or modify it under the terms of the Free Software Foundation. See the `LICENSE` file provided with the source code for more details.

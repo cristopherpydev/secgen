@@ -1,1 +1,2 @@
-from .generator import generate_password, generate_bulk_pwd, generate_symbolic_mnemopwd, generate_pin, generate_token
+from .generator import generate_password, generate_many_passwords, generate_mnemonic_password, generate_pin, generate_token, generate_passphrase, generate_many_passphrases
+from .analysis import analyze_one, analyze_many
