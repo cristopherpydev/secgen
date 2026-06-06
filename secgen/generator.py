@@ -19,8 +19,6 @@ UC_ALPHABET = ALPHABET.upper()
 SYMBOLS_ACCEPTED = '@!#?/&%*'
 NUMBERS = '0123456789'
 
-'''Generator function module that allow users to generate a configurable passwd'''
-
 # =========== DEPENDENCIES ============= #
 
 import random
@@ -28,10 +26,10 @@ import os
 import json
 import secrets
 
-# =========== DEPENDENCIES ============= #
+# =========== FUNCTIONS ============= #
 
 def generate_password(length:int=16, uppercase_letters: bool=True, numbers: bool=True, symbols: bool=False)->str:
-    """#### Generates a desired password given deterministic arguments.
+    """Generates a desired password given deterministic arguments.
 
     Args:
         length (int, optional): The length of the password (16 by default).
@@ -71,7 +69,7 @@ def generate_password(length:int=16, uppercase_letters: bool=True, numbers: bool
     return "".join(generated_password)            
 
 def _bulk_pwd_generator(num:int, length:int, uppercase_letters:bool, numbers:bool, symbols:bool):
-    """#### Hidden generator to handle bulks of passwords. 
+    """Hidden generator to handle bulks of passwords. 
     
     **Do not use this function by any means**.
 
@@ -88,8 +86,8 @@ def _bulk_pwd_generator(num:int, length:int, uppercase_letters:bool, numbers:boo
     for _ in range(num):
         yield generate_password(length, uppercase_letters, numbers, symbols)
 
-def generate_bulk_pwd(num:int=10, length:int=16, uppercase_letters: bool=True, numbers: bool=True, symbols: bool=False)->list[str]:
-    """_summary_
+def generate_many_passwords(num:int=10, length:int=16, uppercase_letters: bool=True, numbers: bool=True, symbols: bool=False)->list[str]:
+    """Generates a list of a desired number of passwords.
 
     Args:
         num (int, optional): _description_. Defaults to 10.
@@ -101,6 +99,9 @@ def generate_bulk_pwd(num:int=10, length:int=16, uppercase_letters: bool=True, n
     Returns:
         list[str]: List of generated passwords (string)
     """
+    if num <=0:
+        raise ValueError("Error, The number of passwords must be atleast 1.")
+    
     return list(_bulk_pwd_generator(num, length, uppercase_letters, numbers, symbols))
 
 def _symbolic_mnmopwd_generator(lvl, composition, NON_WORKED_FILE, CATEGORIES)->str:
@@ -181,8 +182,8 @@ def _symbolic_mnmopwd_generator(lvl, composition, NON_WORKED_FILE, CATEGORIES)->
                     PASSWORD+=NUMBER + SYMBOL + (random.choice(PLAINED_DATASET[i]))
             return PASSWORD
 
-def generate_symbolic_mnemopwd(lvl:str="easy", composition:str="standard")->str:
-    """#### Generates a mnemotechnic password for the user given an optional ``lvl`` parameter and ``composition``.
+def generate_mnemonic_password(lvl:str="easy", composition:str="standard")->str:
+    """Generates a mnemotechnic password for the user given an optional ``lvl`` parameter and ``composition``.
 
     Available options are:
     * lvl
@@ -211,10 +212,10 @@ def generate_symbolic_mnemopwd(lvl:str="easy", composition:str="standard")->str:
         pwd = _symbolic_mnmopwd_generator(lvl, composition, NON_WORKED_FILE, CATEGORIES)
         return pwd
     else:
-        raise("There has been an error generating a symbolic password.")
+        raise RuntimeError("There has been an error generating a symbolic password.")
 
 def generate_pin(length:int=4)->str:
-    """_summary_
+    """Generates a custom numeric pin.
 
     Args:
         length (int, optional): The size of the random generated serie. Defaults to 4.
@@ -222,10 +223,17 @@ def generate_pin(length:int=4)->str:
     Returns:
         str: A serie of random generated numbers.
     """
+    if length <= 0:
+        raise ValueError("Error. The length must be above 0.")
+    
     return "".join([random.choice(NUMBERS) for _ in range(length)])
 
 def generate_token(bytes:int=16)->str:
-    """_summary_
+    """Token generation function.
+
+    * 16 bytes - Temporary URIs or CSRF tokens.
+    * 32 bytes - API Keys oriented.
+    * 64 bytes - Machine-to-machine communication oriented.
 
     Args:
         bytes (int, optional): The bytes accepted. Defaults to 16.
@@ -233,5 +241,85 @@ def generate_token(bytes:int=16)->str:
     Returns:
         str: A serie of random number and char sequence. 
     """
+    accepted_bytes = (16, 32, 64)
+
+    if bytes not in accepted_bytes:
+        raise ValueError(f"Error. You can't generate a token with that amount of bytes.")
     return str(secrets.token_hex(bytes))
+
+def generate_passphrase(words:int=4, separator:str="-")->str:
+    """Generates a strong passphrase with a high entropy lvl.
+
+    Args:
+        words (int, optional): Number of generated words. Defaults to 4.
+        separator (str, optional): Word separator. Defaults to "-".
+
+    Returns:
+        str: The generated passphrase.
+    """
+    BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+    PATH_TO_STREAM = os.path.join(BASE_PATH, 'data', 'random_words.txt')
+    
+
+    
+    if not isinstance(separator, str):
+        return f"The separator must be a string character."
+    
+    if not separator.strip():
+        return f"A separator must be set."  
+    
+    try:
+        words = int(words)
+    except Exception as e:
+        return f"Words parameter must be an integer: {e}"
+    if words <= 0: 
+        return f"Words parameter must be above 0." 
+       
+    DATASET = []
+
+    with open(PATH_TO_STREAM, 'r') as f:
+        for line in f:
+            DATASET.append(line.replace('\n', ""))
+    
+    PASSWORD = ""
+
+    for i in range(words):
+        if i == (words - 1):
+            PASSWORD+=random.choice(DATASET)
+        else:
+            PASSWORD+=random.choice(DATASET)+separator
+
+    return PASSWORD
+        
+def _bulk_passphrase_generator(number:int=4, words:int=4, separator:str="-"):
+    """Generator for a bulk passphrase generation.
+
+    Args:
+        number (int, optional): Number of passphrases used for generation. Defaults to 4.
+        words (int, optional): Number of words of each passphrase generated. Defaults to 4.
+        separator (str, optional): Separator used between words. Defaults to "-".
+
+    Yields:
+        _type_: The generator object ready to parse to list.
+
+    """
+    for _ in range(number):
+        yield generate_passphrase(words, separator)
+
+def generate_many_passphrases(number:int=4, words:int=4, separator:str="-")->list[str]:
+    """Generates a list of passphrases given a deterministic number.
+
+    Args:
+        number (int, optional): The number of passphrases to generate. Defaults to 4.
+        words (int, optional): The amount of words in a passphrase composition. Defaults to 4.
+        separator (str, optional): The used separator for a passphrase. Defaults to "-".
+
+    Returns:
+        list[str]: A list of the composed passphrases.
+    """
+    if number <= 0:
+        raise ValueError("Error. Number parameter bust be above zero.")
+        
+    return list(_bulk_passphrase_generator(number, words, separator))
+
 

@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secgen" 
-version = "0.2.2"
+version = "1.0.0"
 authors = [
   { name="Cristopher Méndez Cervantes", email="cristophermendezcervantes@gmail.com" },
 ]
-description = "A brief tool to generate random secure passwords with ease."
+description = "A brief tool to analyse and generate entropic passwords and keys."
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
